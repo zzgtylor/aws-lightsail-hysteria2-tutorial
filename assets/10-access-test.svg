@@ -47,7 +47,7 @@
   <rect x="642" y="1021" width="574" height="155" rx="16" fill="#eaf1fa"/>
   <text x="94" y="1070" class="sans label">26818 / UDP</text>
   <text x="94" y="1115" class="sans body">服务器的 Hysteria 2 端口</text>
-  <text x="94" y="1155" class="sans small">须与 AWS 防火墙规则一致</text>
+  <text x="94" y="1155" class="sans small">由本文 All UDP 规则覆盖</text>
   <text x="672" y="1070" class="sans label">127.0.0.1:5678</text>
   <text x="672" y="1115" class="sans body">电脑上的 SOCKS5 监听端口</text>
   <text x="672" y="1155" class="sans small">不需要在 AWS 防火墙开放</text>

@@ -59,21 +59,25 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 ## 三、机器的端口是怎么开放的？
 
-下面先把机器用到的端口放行。记住两个数字：**TCP 22 用于 SSH，UDP 26818 用于 Hysteria 2**。端口没有放行时，即使程序装好了，客户端也可能一直超时。
+本节按截图所示的 Lightsail 配置，使用 **All TCP + All UDP + Ping (ICMP) - IPv4** 三条入站规则。它们的来源都是 **Any IPv4 address**。
 
-打开实例详情，进入 **Networking → IPv4 Firewall**：
+打开实例详情，进入 **Networking → IPv4 Firewall**，点击 **Add rule**，按下面三项分别添加并保存；已有相同规则时，直接核对即可：
 
-1. 保留 SSH 的 **TCP 22** 规则。
-2. 点击 **Add rule**，Application 选 **Custom**，Protocol 选 **UDP**，Port 填 **26818**，再保存规则。
-3. 来源可以限制为自己的客户端公网 IP；需要从多个网络使用时，再按实际需要设置该 UDP 规则的来源范围。
+| Application | Protocol | 端口范围 / 类型 | Allowed inbound traffic |
+| --- | --- | --- | --- |
+| All TCP | TCP | 0 → 65535 | Any IPv4 address |
+| All UDP | UDP | 0 → 65535 | Any IPv4 address |
+| Ping (ICMP) - IPv4 | ICMP 8 | 不使用 TCP/UDP 端口 | Any IPv4 address |
 
-如果编辑 SSH 规则并选择 **Restrict to IP address**，使用控制台浏览器终端时，还要保留 **Allow Lightsail browser SSH/RDP**，否则可能把浏览器 SSH 一起挡住。[AWS 官方操作步骤](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-editing-firewall-rules.html)
+添加时在 **Application** 中选择对应预设，协议和端口范围由预设填写。按截图的来源范围，不勾选 **Restrict to IP address**。截图在 All TCP 和 All UDP 的来源列还显示 **Lightsail browser SSH**，核对时保留原有浏览器 SSH 访问设置。[AWS 官方操作步骤](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-editing-firewall-rules.html)
 
-本文不使用端口跳跃，不需要开放 All TCP 或 All UDP。**只开放 TCP 26818 不能代替 UDP 26818。** 如果以后用 IPv6 连接，还需在独立的 **IPv6 Firewall** 配置相应 UDP 规则。
+**All TCP 已包含 SSH 的 TCP 22，All UDP 已包含 Hysteria 2 的 UDP 26818**，无需再为这两个端口添加重复规则。后文服务端和客户端仍使用 **26818/UDP**；防火墙开放全端口不会改变程序实际监听的端口。Ping 规则用于 ICMP 探测，不能替代客户端握手和真实访问测试。
 
-![图5 IPv4防火墙开放TCP22和UDP26818的步骤示意](assets/06-firewall.svg)
+这是一组向任意 IPv4 来源开放全部 TCP/UDP 端口的配置，也会覆盖实例上其他监听的 TCP/UDP 服务。**IPv6 Firewall 仍是独立配置**，不会因为这三条 IPv4 规则自动放行。
 
-*图5：保留 TCP 22，新增 Custom → UDP → 26818；限制 SSH 来源时保留浏览器 SSH 选项。*
+![图5 按截图设置All TCP All UDP和Ping IPv4入站规则的示意](assets/06-firewall.svg)
+
+*图5：与所提供截图一致的三条 IPv4 入站规则：All TCP、All UDP、Ping (ICMP) - IPv4，来源均为 Any IPv4 address。*
 
 ## 四、SSH 怎么连接 AWS 服务器？
 
@@ -164,7 +168,7 @@ auth:
   password: "替换为刚才生成的随机密码"
 ```
 
-按 `Ctrl+O`，回车保存，再按 `Ctrl+X` 退出。这里的 **26818 必须和 AWS 防火墙、客户端里的端口一致**。[服务端字段说明](https://v2.hysteria.network/docs/advanced/Full-Server-Config/)
+按 `Ctrl+O`，回车保存，再按 `Ctrl+X` 退出。这里的 **26818 必须和客户端端口一致，并包含在 AWS 防火墙放行的 UDP 范围中**；本教程的 All UDP 规则已覆盖它。[服务端字段说明](https://v2.hysteria.network/docs/advanced/Full-Server-Config/)
 
 接着设置权限并启动：
 
@@ -282,8 +286,8 @@ Windows PowerShell 使用 `curl.exe`。如果用 v2rayN，把 `5678` 改成它�
 如果一直连不上，按这个顺序检查：
 
 1. **实例和 IP：** 实例是否为 Running，客户端填的是不是当前绑定的静态公网 IP？
-2. **端口：** 服务端、防火墙、客户端是不是同一个 `26818/UDP`？不要只检查 TCP。
-3. **防火墙：** Lightsail 和系统防火墙是否都允许该端口？IPv4、IPv6 规则是否对应？SSH 另查 TCP 22 和浏览器 SSH 来源设置。
+2. **端口：** 服务端和客户端是不是同一个 `26818/UDP`，防火墙的 UDP 放行范围是否覆盖它？不要只检查 TCP。
+3. **防火墙：** Lightsail 的 IPv4 规则是否与第三节一致，系统防火墙是否允许 UDP 26818？All TCP/All UDP 已覆盖 TCP 22/UDP 26818，但不代表系统防火墙也已放行；IPv6 仍需独立核对。SSH 另查 TCP 22 和浏览器 SSH 访问设置。
 4. **服务：** `systemctl status` 是否为 active？日志有没有配置缩进、证书路径或权限错误？
 5. **客户端：** 密码、SNI、证书指纹或完整证书是否一致？v2rayN 实际内核是否按上节配置了证书验证？
 6. **实际请求：** 握手后仍打不开网页，再查本机 SOCKS 端口、DNS、路由以及本地网络是否限制 UDP。

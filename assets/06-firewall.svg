@@ -1,56 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1230" viewBox="0 0 1280 1230" role="img" aria-labelledby="title desc">
-  <title id="title">Lightsail 防火墙：保留 SSH，开放 Hysteria 2 的 UDP 端口</title>
-  <desc id="desc">步骤示意，非控制台实拍。打开 Networking 的 IPv4 Firewall；保留 TCP 22，用 Custom 规则开放 UDP 26818，按客户端网络设置来源。限制 SSH 来源时保留 Allow Lightsail browser SSH/RDP。IPv6 规则单独设置。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1530" viewBox="0 0 1280 1530" role="img" aria-labelledby="title desc">
+  <title id="title">防火墙：按截图配置 IPv4 入站规则</title>
+  <desc id="desc">配置示意，根据用户截图整理。进入 Networking 的 IPv4 Firewall，通过 Add rule 分别选择 All TCP、All UDP 和 Ping (ICMP) - IPv4，每条保存，复用已有相同规则。All TCP 和 All UDP 的范围均为 0 到 65535，来源均为 Any IPv4 address，并保留截图中的 Lightsail browser SSH。Ping 使用 ICMP 8，不适用端口。此图不代表已修改 AWS 实例。</desc>
   <defs>
     <style>
       text { font-family: "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #18324d; }
       .title { font-size: 40px; font-weight: 700; }
       .subtitle { font-size: 25px; fill: #52677c; }
       .heading { font-size: 31px; font-weight: 650; }
-      .body { font-size: 27px; }
+      .body { font-size: 28px; }
       .small { font-size: 25px; }
-      .code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 27px; }
+      .code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 28px; }
       .badge { font-size: 29px; font-weight: 750; fill: #ffffff; text-anchor: middle; }
     </style>
   </defs>
-  <rect width="1280" height="1230" fill="#f5f8fc"/>
+  <rect width="1280" height="1530" fill="#f5f8fc"/>
   <rect width="1280" height="155" fill="#ffffff"/>
   <rect x="48" y="44" width="8" height="47" rx="4" fill="#ef8b23"/>
-  <text class="title" x="76" y="82">防火墙：只放行本文需要的端口</text>
-  <text class="subtitle" x="76" y="126">步骤示意 · 非控制台实拍 ｜ 对应正文第三节</text>
-
-  <rect x="48" y="185" width="1184" height="210" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
-  <circle cx="94" cy="235" r="25" fill="#ef8b23"/>
-  <text class="badge" x="94" y="245">1</text>
-  <text class="heading" x="139" y="246">进入实例网络设置，保留 SSH 规则</text>
-  <rect x="80" y="273" width="1120" height="58" rx="10" fill="#edf3fa"/>
-  <text class="code" x="103" y="311">Networking → IPv4 Firewall</text>
-  <text class="body" x="81" y="370">保留已有的 SSH 规则：协议 TCP，端口 22。</text>
-
-  <rect x="48" y="423" width="1184" height="270" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
-  <circle cx="94" cy="473" r="25" fill="#ef8b23"/>
-  <text class="badge" x="94" y="483">2</text>
-  <text class="heading" x="139" y="484">添加 Hysteria 2 使用的 UDP 规则</text>
-  <text class="code" x="81" y="539">Add rule</text>
-  <rect x="80" y="561" width="347" height="67" rx="10" fill="#edf3fa"/>
-  <rect x="441" y="561" width="347" height="67" rx="10" fill="#edf3fa"/>
-  <rect x="802" y="561" width="398" height="67" rx="10" fill="#fff3e4"/>
-  <text class="code" x="101" y="605">Application: Custom</text>
-  <text class="code" x="462" y="605">Protocol: UDP</text>
-  <text class="code" x="823" y="605">Port: 26818 → Save</text>
-  <text class="small" x="81" y="665">来源按客户端公网 IP 设置；多个网络使用时，按实际需求选择范围。</text>
-
-  <rect x="48" y="721" width="1184" height="280" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
-  <circle cx="94" cy="771" r="25" fill="#ef8b23"/>
-  <text class="badge" x="94" y="781">3</text>
-  <text class="heading" x="139" y="782">限制 SSH 来源时，保留浏览器连接入口</text>
-  <text class="body" x="81" y="840">如果编辑 SSH 规则并启用 Restrict to IP address：</text>
-  <rect x="80" y="863" width="1120" height="64" rx="10" fill="#edf3fa"/>
-  <text class="code" x="103" y="906">保留 Allow Lightsail browser SSH/RDP</text>
-  <text class="small" x="81" y="971">这样才能继续使用 Lightsail 控制台里的浏览器 SSH 终端。</text>
-
-  <rect x="48" y="1030" width="1184" height="150" rx="18" fill="#fff3e4" stroke="#f2c890" stroke-width="2"/>
-  <text class="body" x="80" y="1077" font-weight="650">最后核对：TCP 22 + UDP 26818</text>
-  <text class="small" x="80" y="1118">TCP 26818 不能替代 UDP 26818；本文无需开放 All TCP / All UDP。</text>
-  <text class="small" x="80" y="1159">以后使用 IPv6 时，还需在 IPv6 Firewall 单独添加相应的 UDP 规则。</text>
+  <text class="title" x="76" y="82">防火墙：按截图配置 IPv4 入站规则</text>
+  <text class="subtitle" x="76" y="126">配置示意 · 根据用户截图整理 ｜ 对应正文第三节</text>
+  <rect x="48" y="185" width="1184" height="190" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <text class="heading" x="80" y="233">打开实例 → Networking → IPv4 Firewall</text>
+  <text class="body" x="80" y="284">点击 Add rule，分别选择下列三种 Application，每条规则保存。</text>
+  <text class="small" x="80" y="338">已有相同规则时直接复用，避免重复添加；按截图保留浏览器 SSH 入口。</text>
+  <rect x="48" y="405" width="1184" height="230" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="455" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="465">1</text>
+  <text class="heading" x="139" y="466">Application：All TCP</text>
+  <rect x="80" y="490" width="1120" height="58" rx="10" fill="#edf3fa"/>
+  <text class="code" x="102" y="530">Protocol: TCP</text>
+  <text class="code" x="575" y="530">Port range: 0 → 65535</text>
+  <text class="body" x="80" y="584">Allowed inbound traffic：Any IPv4 address</text>
+  <text class="small" x="80" y="619">按截图保留：Lightsail browser SSH</text>
+  <rect x="48" y="665" width="1184" height="230" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="715" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="725">2</text>
+  <text class="heading" x="139" y="726">Application：All UDP</text>
+  <rect x="80" y="750" width="1120" height="58" rx="10" fill="#edf3fa"/>
+  <text class="code" x="102" y="790">Protocol: UDP</text>
+  <text class="code" x="575" y="790">Port range: 0 → 65535</text>
+  <text class="body" x="80" y="844">Allowed inbound traffic：Any IPv4 address</text>
+  <text class="small" x="80" y="879">截图也列出：Lightsail browser SSH</text>
+  <rect x="48" y="925" width="1184" height="210" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="975" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="985">3</text>
+  <text class="heading" x="139" y="986">Application：Ping (ICMP) - IPv4</text>
+  <rect x="80" y="1010" width="1120" height="58" rx="10" fill="#edf3fa"/>
+  <text class="code" x="102" y="1050">Protocol: ICMP 8</text>
+  <text class="body" x="575" y="1050">端口：—（不适用）</text>
+  <text class="body" x="80" y="1110">Allowed inbound traffic：Any IPv4 address</text>
+  <rect x="48" y="1165" width="1184" height="315" rx="18" fill="#fff3e4" stroke="#f2c890" stroke-width="2"/>
+  <text class="heading" x="80" y="1213">范围与核对</text>
+  <text class="small" x="80" y="1260">这是截图的全端口配置，来源为所有 IPv4 地址。</text>
+  <text class="small" x="80" y="1304">全 TCP 已覆盖 TCP 22，全 UDP 已覆盖 UDP 26818，无需重复添加。</text>
+  <text class="small" x="80" y="1348">Hysteria 2 仍监听 26818/UDP；Ping 不能代替实际代理访问测试。</text>
+  <text class="small" x="80" y="1392">IPv6 Firewall 独立配置；本图只对应 IPv4 入站规则。</text>
+  <text class="small" x="80" y="1440">此图是配置示意，不代表已修改 AWS 实例。</text>
 </svg>
