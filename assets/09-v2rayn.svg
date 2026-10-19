@@ -1,63 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1420" viewBox="0 0 1280 1420" role="img" aria-labelledby="title desc">
-  <title id="title">v2rayN 7.25.6 导入和证书验证检查</title>
-  <desc id="desc">配置示意。先从剪贴板导入链接并核对 IP、端口、密码和 SNI，再检查实际内核配置。Xray 检查 pinnedPeerCertSha256，sing-box 使用完整公有 PEM 证书和 insecure false。不要复制 server.key。</desc>
-  <defs>
-    <style>
-      .sans { font-family: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif; }
-      .mono { font-family: 'SFMono-Regular', Menlo, Consolas, monospace; }
-      .title { font-size: 40px; font-weight: 700; fill: #142d4e; }
-      .body { font-size: 27px; fill: #243b53; }
-      .small { font-size: 25px; fill: #42566e; }
-      .code { font-size: 25px; fill: #16324f; }
-      .label { font-size: 29px; font-weight: 700; fill: #142d4e; }
-      .num { font-size: 27px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
-    </style>
-  </defs>
-  <rect width="1280" height="1420" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1250" viewBox="0 0 1280 1250" role="img" aria-labelledby="title desc">
+  <title id="title">复制完整链接，导入 v2rayN 或 Shadowrocket</title>
+  <desc id="desc">步骤示意，对应正文第七节。使用支持 Hysteria 2 的客户端版本。在 v2rayN 中从剪贴板导入、设为活动节点并自动配置系统代理。在 iPhone 或 iPad 的 Shadowrocket 中允许粘贴并按导入提示添加节点，选中后打开连接，首次按系统提示允许 VPN 配置。图中不是客户端实拍界面。</desc>
+  <defs><style>
+    .sans { font-family: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif; }
+    .title { font-size: 40px; font-weight: 700; fill: #142d4e; }
+    .body { font-size: 28px; fill: #243b53; }
+    .small { font-size: 25px; fill: #42566e; }
+    .label { font-size: 31px; font-weight: 700; fill: #142d4e; }
+    .num { font-size: 27px; font-weight: 700; fill: #fff; text-anchor: middle; }
+  </style></defs>
+  <rect width="1280" height="1250" fill="#fff"/>
   <rect width="1280" height="14" fill="#ff9900"/>
-  <text x="64" y="86" class="sans title">v2rayN：导入后，还要检查证书验证</text>
-  <text x="64" y="135" class="sans small">配置示意 · 以 v2rayN 7.25.6 为例 · 占位值须替换</text>
+  <text x="64" y="86" class="sans title">复制链接，直接导入客户端</text>
+  <text x="64" y="135" class="sans small">步骤示意 · 对应正文第七节 · 请使用支持 Hysteria 2 的版本</text>
 
-  <circle cx="86" cy="199" r="23" fill="#ff9900"/>
-  <text x="86" y="209" class="sans num">1</text>
-  <text x="125" y="209" class="sans label">复制完整链接 → 从剪贴板导入批量 URL</text>
-  <text x="125" y="255" class="sans body">链接中的 IP、密码和指纹，先换成自己的值。</text>
-  <circle cx="86" cy="318" r="23" fill="#ff9900"/>
-  <text x="86" y="328" class="sans num">2</text>
-  <text x="125" y="328" class="sans label">核对连接信息</text>
-  <rect x="125" y="355" width="1091" height="109" rx="16" fill="#f1f5fa" stroke="#d8e2ee"/>
-  <text x="151" y="400" class="sans body">服务器 IP · 26818 端口 · 服务端同一密码</text>
-  <text x="151" y="440" class="mono code">SNI: aws-hy2.local</text>
-  <circle cx="86" cy="524" r="23" fill="#ff9900"/>
-  <text x="86" y="534" class="sans num">3</text>
-  <text x="125" y="534" class="sans label">确认实际内核，再检查生成的 TLS 配置</text>
-  <text x="125" y="580" class="sans body">不能只看节点编辑页；不同内核的处理方式不同。</text>
+  <rect x="64" y="178" width="1152" height="447" rx="20" fill="#f1f5fa" stroke="#d8e2ee"/>
+  <text x="98" y="235" class="sans label">电脑：v2rayN</text>
+  <text x="98" y="281" class="sans small">复制的是脚本输出的完整分享链接，不是服务器 IP。</text>
+  <circle cx="124" cy="333" r="22" fill="#ff9900"/>
+  <text x="124" y="343" class="sans num">1</text>
+  <text x="167" y="343" class="sans body">复制整条 hysteria2:// 或 hy2:// 链接。</text>
+  <circle cx="124" cy="402" r="22" fill="#ff9900"/>
+  <text x="124" y="412" class="sans num">2</text>
+  <text x="167" y="412" class="sans body">在服务器列表按 Ctrl+V，或选择</text>
+  <text x="167" y="453" class="sans body">“从剪贴板导入分享链接”一类的导入入口。</text>
+  <circle cx="124" cy="509" r="22" fill="#ff9900"/>
+  <text x="124" y="519" class="sans num">3</text>
+  <text x="167" y="519" class="sans body">将导入的节点设为活动节点。</text>
+  <circle cx="124" cy="578" r="22" fill="#ff9900"/>
+  <text x="124" y="588" class="sans num">4</text>
+  <text x="167" y="588" class="sans body">系统代理选择“自动配置系统代理”。</text>
 
-  <rect x="64" y="616" width="550" height="506" rx="18" fill="#f1f5fa" stroke="#d8e2ee"/>
-  <rect x="642" y="616" width="574" height="506" rx="18" fill="#f1f5fa" stroke="#d8e2ee"/>
-  <text x="94" y="670" class="sans label">Xray 分支</text>
-  <text x="94" y="720" class="sans body">核对指纹字段：</text>
-  <text x="94" y="766" class="mono code">pinnedPeerCertSha256</text>
-  <text x="94" y="818" class="sans body">它必须包含自己的</text>
-  <text x="94" y="859" class="sans body">服务器证书指纹。</text>
-  <rect x="94" y="903" width="490" height="172" rx="12" fill="#ffffff"/>
-  <text x="116" y="947" class="sans small">正文已提供对应版本源码。</text>
-  <text x="116" y="989" class="sans small">导入成功不代表证书验证</text>
-  <text x="116" y="1031" class="sans small">已经配置正确。</text>
+  <rect x="64" y="659" width="1152" height="447" rx="20" fill="#eaf1fa" stroke="#d8e2ee"/>
+  <text x="98" y="716" class="sans label">iPhone / iPad：Shadowrocket</text>
+  <text x="98" y="762" class="sans small">按当前版本的粘贴与导入提示操作。</text>
+  <circle cx="124" cy="814" r="22" fill="#ff9900"/>
+  <text x="124" y="824" class="sans num">1</text>
+  <text x="167" y="824" class="sans body">复制完整链接，再打开 Shadowrocket。</text>
+  <circle cx="124" cy="883" r="22" fill="#ff9900"/>
+  <text x="124" y="893" class="sans num">2</text>
+  <text x="167" y="893" class="sans body">允许粘贴，按应用的导入提示添加节点。</text>
+  <circle cx="124" cy="952" r="22" fill="#ff9900"/>
+  <text x="124" y="962" class="sans num">3</text>
+  <text x="167" y="962" class="sans body">点选刚导入的节点，再打开连接开关。</text>
+  <circle cx="124" cy="1021" r="22" fill="#ff9900"/>
+  <text x="124" y="1031" class="sans num">4</text>
+  <text x="167" y="1031" class="sans body">首次使用时，按系统提示允许 VPN 配置。</text>
+  <text x="167" y="1074" class="sans small">完成后进入下一节，用浏览器实际打开网页。</text>
 
-  <text x="672" y="670" class="sans label">sing-box 分支</text>
-  <text x="672" y="720" class="sans body">同版本不能只靠分享链接。</text>
-  <text x="672" y="771" class="sans small">通过可信 SSH 读取：</text>
-  <text x="672" y="815" class="mono code">/etc/hysteria/server.crt</text>
-  <text x="672" y="866" class="sans body">导入完整公有 PEM 证书。</text>
-  <text x="672" y="917" class="sans small">实际 TLS 配置应包含：</text>
-  <text x="672" y="963" class="mono code">certificate</text>
-  <text x="672" y="1007" class="mono code">insecure: false</text>
-  <text x="672" y="1051" class="mono code">server_name: aws-hy2.local</text>
-
-  <rect x="64" y="1154" width="1152" height="145" rx="16" fill="#fff6e7" stroke="#f0bd70"/>
-  <text x="90" y="1200" class="sans label">server.key 是私钥，留在服务器，不要复制。</text>
-  <text x="90" y="1244" class="sans body">不知道怎样检查实际配置时，先用正文中的官方客户端。</text>
-  <text x="64" y="1352" class="sans body">证书检查完成后 → 设为活动节点 → 继续做实际访问测试</text>
-  <text x="64" y="1394" class="sans small">真实分享链接含凭据，不要放进公开截图。</text>
+  <text x="64" y="1164" class="sans body">如果不能识别链接，先检查链接是否完整、版本是否支持 Hysteria 2。</text>
+  <text x="64" y="1208" class="sans small">本图为流程说明，不是客户端实拍，也不代表已经连通。</text>
 </svg>
