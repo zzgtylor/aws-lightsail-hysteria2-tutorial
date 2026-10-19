@@ -25,7 +25,7 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 图中是 Debian 12.15，之后的小版本号可能变化，本文按 Debian 12 操作。
 
-> 配图说明：文中五张图片依据实际操作截图，经 AI 整理为示意图，关键选项和数值已与原素材核对。它们用于说明操作位置，不代表当前服务器或节点的实时状态。
+> 配图说明：图1–4、图7依据实际操作截图，经 AI 整理为示意图；图5–6、图8–10是按本文步骤绘制的操作、配置和测试示意图。图中选项、命令和占位值与相邻正文对应；示意图不代表当前 AWS 实例的实时状态或实际连接测试结果。
 
 ![图1 选择 Linux operating system 和 Debian 12](assets/01-debian12.png)
 
@@ -71,6 +71,10 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 本文不使用端口跳跃，不需要开放 All TCP 或 All UDP。**只开放 TCP 26818 不能代替 UDP 26818。** 如果以后用 IPv6 连接，还需在独立的 **IPv6 Firewall** 配置相应 UDP 规则。
 
+![图5 IPv4防火墙开放TCP22和UDP26818的步骤示意](assets/06-firewall.svg)
+
+*图5：保留 TCP 22，新增 Custom → UDP → 26818；限制 SSH 来源时保留浏览器 SSH 选项。*
+
 ## 四、SSH 怎么连接 AWS 服务器？
 
 进入实例的 **Connect** 页面，点击 **Connect using SSH**。看到命令行后，先确认系统和当前用户：
@@ -87,6 +91,10 @@ sudo -i
 ```
 
 后面的安装和服务端配置命令，都在这个 **AWS 服务器的 SSH 窗口**执行。客户端命令则留到自己电脑上执行，先不要混在一起。
+
+![图6 浏览器SSH连接与确认系统和用户的步骤示意](assets/07-ssh.svg)
+
+*图6：从 Connect using SSH 打开终端，依次确认系统、用户并执行 sudo -i。图中展示待执行命令。*
 
 ## 五、在 AWS 服务器上安装 Hysteria 2
 
@@ -107,9 +115,9 @@ hysteria version
 
 下载报错时先停下来处理，不要继续运行上次遗留的脚本，也不要关闭 HTTPS 证书校验。
 
-![图5 安装器输出成功提示](assets/05-installer-output.png)
+![图7 安装器输出成功提示](assets/05-installer-output.png)
 
-*图5：安装阶段的输出示意。*
+*图7：安装阶段的输出示意。*
 
 这里使用 [Hysteria 官方安装器](https://v2.hysteria.network/docs/getting-started/Server-Installation-Script/)，它会安装程序、systemd 服务和示例配置。**看到安装成功后，先别急着导入客户端，接下来还要填端口、密码和证书。**
 
@@ -219,6 +227,10 @@ Windows amd64 在 PowerShell 中运行：
 
 其他平台换成对应的程序名。看到 `connected to server` 后，继续做下一节的实际访问测试。
 
+![图8 官方客户端client.yaml字段与占位值替换示意](assets/08-client-config.svg)
+
+*图8：在自己电脑上保存 client.yaml，替换 IP、密码和指纹；insecure: true 与正确 pinSHA256 必须配套。*
+
 ### 2. 习惯 v2rayN 的话，怎么从剪贴板导入？
 
 也可以将连接信息整理为分享链接。把密码、IP 和指纹替换为自己的值：
@@ -241,6 +253,10 @@ hysteria2://YOUR_PASSWORD@203.0.113.10:26818/?sni=aws-hy2.local&insecure=1&pinSH
 
 证书检查完成后，再设为活动节点并测试访问。
 
+![图9 v2rayN导入及Xray和sing-box证书校验核对示意](assets/09-v2rayn.svg)
+
+*图9：按 v2rayN 7.25.6 的实际内核核对证书配置，再设为活动节点。不会检查时先用官方客户端。*
+
 ## 八、怎么判断节点真正连通了？
 
 先确认客户端握手成功，再从自己的电脑通过本机 SOCKS5 端口发起请求：
@@ -256,6 +272,10 @@ Windows PowerShell 使用 `curl.exe`。如果用 v2rayN，把 `5678` 改成它�
 这里再分清一次：**26818 是服务器的 UDP 端口，5678 是电脑上的 SOCKS5 端口**，后者不需要在 AWS 防火墙开放。浏览器和其他应用是否走节点，取决于它们的代理或 TUN 设置；上面的命令显式指定了代理，便于单独检查这条路径。
 
 “安装成功”“节点已选中”或一个延迟数字，都不能代替实际请求。服务运行、客户端握手、真实访问都通过，才算这次搭建跑通。
+
+![图10 本机SOCKS5访问测试与预期结果示意](assets/10-access-test.svg)
+
+*图10：先确认握手，再通过本机 SOCKS5 请求 Example Domain，最后核对出口。图内是预期结果说明，不是 AWS 节点已连通的实测截图。*
 
 ## 九、连接失败应该怎么解决？
 

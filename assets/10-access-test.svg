@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1370" viewBox="0 0 1280 1370" role="img" aria-labelledby="title desc">
+  <title id="title">从自己的电脑测试 Hysteria 2 节点实际访问</title>
+  <desc id="desc">测试步骤和预期结果示例。先确认客户端握手，再用 curl 显式指定本机 SOCKS5 端口访问 example.com，并核对出口地址。本图不代表真实 AWS 节点已测试通过。</desc>
+  <defs>
+    <style>
+      .sans { font-family: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif; }
+      .mono { font-family: 'SFMono-Regular', Menlo, Consolas, monospace; }
+      .title { font-size: 40px; font-weight: 700; fill: #142d4e; }
+      .body { font-size: 27px; fill: #243b53; }
+      .small { font-size: 25px; fill: #42566e; }
+      .code { font-size: 27px; fill: #16324f; }
+      .label { font-size: 29px; font-weight: 700; fill: #142d4e; }
+      .num { font-size: 27px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect width="1280" height="1370" fill="#ffffff"/>
+  <rect width="1280" height="14" fill="#ff9900"/>
+  <text x="64" y="86" class="sans title">怎么判断节点真正连通了？</text>
+  <text x="64" y="135" class="sans small">测试步骤 · 预期结果示例 · 以下操作都在自己的电脑上完成</text>
+
+  <circle cx="86" cy="199" r="23" fill="#ff9900"/>
+  <text x="86" y="209" class="sans num">1</text>
+  <text x="125" y="209" class="sans label">先确认客户端握手成功</text>
+  <text x="125" y="258" class="sans body">官方客户端出现 connected to server 后，再测试真实请求。</text>
+  <circle cx="86" cy="321" r="23" fill="#ff9900"/>
+  <text x="86" y="331" class="sans num">2</text>
+  <text x="125" y="331" class="sans label">通过本机 SOCKS5 端口发起请求</text>
+  <rect x="64" y="360" width="1152" height="197" rx="18" fill="#f1f5fa" stroke="#d8e2ee"/>
+  <text x="94" y="416" class="mono code" xml:space="preserve">
+    <tspan x="94" dy="0">curl --fail --show-error \</tspan>
+    <tspan x="94" dy="47">  --socks5-hostname 127.0.0.1:5678 \</tspan>
+    <tspan x="94" dy="47">  https://example.com/</tspan>
+  </text>
+  <text x="94" y="605" class="sans small">图中为 Bash 续行展示；正文提供可直接复制的单行命令。</text>
+  <text x="94" y="647" class="sans body">Windows PowerShell 用 curl.exe；v2rayN 用实际 SOCKS 端口。</text>
+
+  <circle cx="86" cy="711" r="23" fill="#ff9900"/>
+  <text x="86" y="721" class="sans num">3</text>
+  <text x="125" y="721" class="sans label">检查收到的内容，再核对出口</text>
+  <rect x="125" y="751" width="1091" height="180" rx="16" fill="#f1f5fa" stroke="#d8e2ee"/>
+  <text x="151" y="800" class="sans body">预期收到 Example Domain 页面的 HTML 内容。</text>
+  <text x="151" y="849" class="sans body">再通过同一代理访问可信的公网 IP 查询服务，</text>
+  <text x="151" y="893" class="sans body">核对出口是否为这台 AWS 实例的预期 IP。</text>
+
+  <text x="64" y="994" class="sans label">两个端口，作用不同</text>
+  <rect x="64" y="1021" width="550" height="155" rx="16" fill="#eaf1fa"/>
+  <rect x="642" y="1021" width="574" height="155" rx="16" fill="#eaf1fa"/>
+  <text x="94" y="1070" class="sans label">26818 / UDP</text>
+  <text x="94" y="1115" class="sans body">服务器的 Hysteria 2 端口</text>
+  <text x="94" y="1155" class="sans small">须与 AWS 防火墙规则一致</text>
+  <text x="672" y="1070" class="sans label">127.0.0.1:5678</text>
+  <text x="672" y="1115" class="sans body">电脑上的 SOCKS5 监听端口</text>
+  <text x="672" y="1155" class="sans small">不需要在 AWS 防火墙开放</text>
+
+  <rect x="64" y="1210" width="1152" height="112" rx="16" fill="#fff6e7" stroke="#f0bd70"/>
+  <text x="90" y="1256" class="sans label">示意图不代表真实 AWS 节点已测试通过。</text>
+  <text x="90" y="1300" class="sans small">安装成功、节点已选中或延迟数字，都不能代替实际请求。</text>
+</svg>

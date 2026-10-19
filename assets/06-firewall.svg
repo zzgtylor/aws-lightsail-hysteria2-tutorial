@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1230" viewBox="0 0 1280 1230" role="img" aria-labelledby="title desc">
+  <title id="title">Lightsail 防火墙：保留 SSH，开放 Hysteria 2 的 UDP 端口</title>
+  <desc id="desc">步骤示意，非控制台实拍。打开 Networking 的 IPv4 Firewall；保留 TCP 22，用 Custom 规则开放 UDP 26818，按客户端网络设置来源。限制 SSH 来源时保留 Allow Lightsail browser SSH/RDP。IPv6 规则单独设置。</desc>
+  <defs>
+    <style>
+      text { font-family: "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #18324d; }
+      .title { font-size: 40px; font-weight: 700; }
+      .subtitle { font-size: 25px; fill: #52677c; }
+      .heading { font-size: 31px; font-weight: 650; }
+      .body { font-size: 27px; }
+      .small { font-size: 25px; }
+      .code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 27px; }
+      .badge { font-size: 29px; font-weight: 750; fill: #ffffff; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect width="1280" height="1230" fill="#f5f8fc"/>
+  <rect width="1280" height="155" fill="#ffffff"/>
+  <rect x="48" y="44" width="8" height="47" rx="4" fill="#ef8b23"/>
+  <text class="title" x="76" y="82">防火墙：只放行本文需要的端口</text>
+  <text class="subtitle" x="76" y="126">步骤示意 · 非控制台实拍 ｜ 对应正文第三节</text>
+
+  <rect x="48" y="185" width="1184" height="210" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="235" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="245">1</text>
+  <text class="heading" x="139" y="246">进入实例网络设置，保留 SSH 规则</text>
+  <rect x="80" y="273" width="1120" height="58" rx="10" fill="#edf3fa"/>
+  <text class="code" x="103" y="311">Networking → IPv4 Firewall</text>
+  <text class="body" x="81" y="370">保留已有的 SSH 规则：协议 TCP，端口 22。</text>
+
+  <rect x="48" y="423" width="1184" height="270" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="473" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="483">2</text>
+  <text class="heading" x="139" y="484">添加 Hysteria 2 使用的 UDP 规则</text>
+  <text class="code" x="81" y="539">Add rule</text>
+  <rect x="80" y="561" width="347" height="67" rx="10" fill="#edf3fa"/>
+  <rect x="441" y="561" width="347" height="67" rx="10" fill="#edf3fa"/>
+  <rect x="802" y="561" width="398" height="67" rx="10" fill="#fff3e4"/>
+  <text class="code" x="101" y="605">Application: Custom</text>
+  <text class="code" x="462" y="605">Protocol: UDP</text>
+  <text class="code" x="823" y="605">Port: 26818 → Save</text>
+  <text class="small" x="81" y="665">来源按客户端公网 IP 设置；多个网络使用时，按实际需求选择范围。</text>
+
+  <rect x="48" y="721" width="1184" height="280" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <circle cx="94" cy="771" r="25" fill="#ef8b23"/>
+  <text class="badge" x="94" y="781">3</text>
+  <text class="heading" x="139" y="782">限制 SSH 来源时，保留浏览器连接入口</text>
+  <text class="body" x="81" y="840">如果编辑 SSH 规则并启用 Restrict to IP address：</text>
+  <rect x="80" y="863" width="1120" height="64" rx="10" fill="#edf3fa"/>
+  <text class="code" x="103" y="906">保留 Allow Lightsail browser SSH/RDP</text>
+  <text class="small" x="81" y="971">这样才能继续使用 Lightsail 控制台里的浏览器 SSH 终端。</text>
+
+  <rect x="48" y="1030" width="1184" height="150" rx="18" fill="#fff3e4" stroke="#f2c890" stroke-width="2"/>
+  <text class="body" x="80" y="1077" font-weight="650">最后核对：TCP 22 + UDP 26818</text>
+  <text class="small" x="80" y="1118">TCP 26818 不能替代 UDP 26818；本文无需开放 All TCP / All UDP。</text>
+  <text class="small" x="80" y="1159">以后使用 IPv6 时，还需在 IPv6 Firewall 单独添加相应的 UDP 规则。</text>
+</svg>

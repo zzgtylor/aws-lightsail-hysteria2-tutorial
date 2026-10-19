@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1320" viewBox="0 0 1280 1320" role="img" aria-labelledby="title desc">
+  <title id="title">在自己的电脑上配置 Hysteria 2 官方客户端</title>
+  <desc id="desc">配置示意，client.yaml 放在本机。替换服务器示例 IP、密码和 SHA-256 指纹。insecure true 必须与正确的 pinSHA256 配套。本地 SOCKS5 监听 127.0.0.1:5678。</desc>
+  <defs>
+    <style>
+      .sans { font-family: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif; }
+      .mono { font-family: 'SFMono-Regular', Menlo, Consolas, monospace; }
+      .title { font-size: 40px; font-weight: 700; fill: #142d4e; }
+      .body { font-size: 27px; fill: #243b53; }
+      .small { font-size: 25px; fill: #42566e; }
+      .code { font-size: 26px; fill: #16324f; }
+      .label { font-size: 28px; font-weight: 700; fill: #142d4e; }
+      .num { font-size: 27px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect width="1280" height="1320" fill="#ffffff"/>
+  <rect x="0" y="0" width="1280" height="14" fill="#ff9900"/>
+  <text x="64" y="86" class="sans title">在自己的电脑上配置官方客户端</text>
+  <text x="64" y="135" class="sans small">配置示意 · 占位值须替换 · 本图中的地址不是可用节点</text>
+
+  <circle cx="86" cy="199" r="23" fill="#ff9900"/>
+  <text x="86" y="209" class="sans num">1</text>
+  <text x="125" y="209" class="sans label">把下面内容保存为本机的 client.yaml</text>
+  <rect x="64" y="236" width="1152" height="500" rx="18" fill="#f1f5fa" stroke="#d8e2ee"/>
+  <text x="94" y="285" class="mono code" xml:space="preserve">
+    <tspan x="94" dy="0">server: "203.0.113.10:26818"</tspan>
+    <tspan x="94" dy="39">auth: "替换为服务端的随机密码"</tspan>
+    <tspan x="94" dy="78">tls:</tspan>
+    <tspan x="94" dy="39">  sni: aws-hy2.local</tspan>
+    <tspan x="94" dy="39">  insecure: true</tspan>
+    <tspan x="94" dy="39">  pinSHA256: "替换为服务器证书的SHA-256指纹"</tspan>
+    <tspan x="94" dy="78">socks5:</tspan>
+    <tspan x="94" dy="39">  listen: 127.0.0.1:5678</tspan>
+  </text>
+
+  <circle cx="86" cy="792" r="23" fill="#ff9900"/>
+  <text x="86" y="802" class="sans num">2</text>
+  <text x="125" y="802" class="sans label">运行前，替换三个值</text>
+  <text x="94" y="853" class="sans body">① 203.0.113.10 → 自己实例绑定的静态公网 IPv4</text>
+  <text x="94" y="899" class="sans body">② auth → 服务端生成的同一串随机密码</text>
+  <text x="94" y="945" class="sans body">③ pinSHA256 → 自己服务器证书的 SHA-256 指纹</text>
+  <rect x="64" y="976" width="1152" height="104" rx="16" fill="#fff6e7" stroke="#f0bd70"/>
+  <text x="90" y="1018" class="sans body">insecure: true 必须与正确的 pinSHA256 配套。</text>
+  <text x="90" y="1056" class="sans small">不能只保留关闭校验的选项；SNI 保持 aws-hy2.local。</text>
+
+  <circle cx="86" cy="1134" r="23" fill="#ff9900"/>
+  <text x="86" y="1144" class="sans num">3</text>
+  <text x="125" y="1144" class="sans label">程序和配置放同一目录，再按实际文件名运行</text>
+  <text x="94" y="1191" class="sans small">Linux amd64 启动示例：</text>
+  <text x="94" y="1237" class="mono code">./hysteria-linux-amd64 client -c client.yaml</text>
+  <text x="94" y="1283" class="sans small">首次运行前按正文执行 chmod +x；其他系统使用对应程序名。</text>
+</svg>
