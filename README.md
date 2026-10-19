@@ -1,89 +1,96 @@
-# AWS Lightsail 搭建 Hysteria 2 节点教程
+# AWS Lightsail 服务器如何搭建 Hysteria 2 节点：一篇讲清从创建到连通
 
-从创建 Debian 服务器、设置 UDP 端口，到配置证书和客户端，本文带你完成一条可以逐步检查的搭建流程。示例使用 Amazon Lightsail，区域为美国俄勒冈州 `us-west-2`，操作系统为 Debian 12，节点端口为 `26818/UDP`。
+想自己搭一个 VPS 节点，可以按这条顺序完成：**准备账号 → 创建服务器 → 开放端口 → SSH 连接 → 安装配置 → 连接客户端 → 检查能否使用。**
 
-本文按新建的 Debian 12 实例编写。如果服务器上已有其他业务，操作前先备份配置，并妥善保管密码、私钥及节点分享链接。
+这篇教程使用 AWS Lightsail、Debian 12 和 Hysteria 2。示例区域是美国俄勒冈州 `us-west-2`，节点端口统一使用 `26818/UDP`。跟着做时，把示例 IP、密码和证书指纹换成你自己的值。
 
-## 一、开始前准备什么
+## 一、开始之前，要准备什么？
 
-你需要一个能够正常使用 Lightsail 的 AWS 账号、一台电脑，以及支持 Hysteria 2 的客户端。没有域名也可以跟着本文操作：我们使用自签名证书，并通过证书指纹确认服务器身份。
+先准备好能正常使用 Lightsail 的 AWS 账号、一台电脑，以及支持 Hysteria 2 的客户端。VPS 可以理解为一台通过 SSH 远程操作的 Linux 电脑；Hysteria 2 则是我们接下来要安装的节点程序。
 
-先分清三个容易混淆的概念：
+没有域名也能跟着做。本文使用**自签名证书加证书指纹验证**，客户端通过指纹确认连接的是自己的服务器。
 
-- **VPS** 是运行服务的云服务器，本文选择 AWS Lightsail。
-- **Hysteria 2** 是部署在服务器和客户端上的代理程序，本文使用普通 QUIC 模式，节点连接需要 UDP。
-- **本机代理端口** 是电脑上的入口。本文的 `127.0.0.1:5678` 只在本机使用，不需要在 AWS 防火墙开放。
+Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些项目，需要看自己的账号页面；不要把试用额度理解成永久免费。首次使用可以先阅读 [AWS Lightsail 入门](https://docs.aws.amazon.com/lightsail/latest/userguide/getting-started-with-amazon-lightsail.html)。本文按新建 Debian 12 实例编写；已有其他业务的服务器，请先备份配置。
 
-Lightsail 采用套餐计费。截图中的方案是每月 7 美元，包含 1 GB 内存、2 vCPU、40 GB SSD 和 2 TB 套餐流量；价格、地区及流量计费条件以创建页面和 [AWS 官方价表](https://aws.amazon.com/lightsail/pricing/) 为准。新账号能否使用额度、额度期限和覆盖范围，需要查看自己的账号页面，不能据此承诺永久免费。
+## 二、AWS 服务器怎么创建？
 
-## 二、创建 Lightsail 实例
+### 1. 打开 Lightsail，选择区域和系统
 
-### 1. 进入 Lightsail 并选择区域
+登录 [AWS 控制台](https://console.aws.amazon.com/)，搜索并进入 **Lightsail**，点击 **Create instance**。本文选择俄勒冈州，你也可以根据自己的网络线路和资源情况选择其他区域。
 
-登录 [AWS 管理控制台](https://console.aws.amazon.com/)，搜索并进入 **Lightsail**，选择 **Create instance**。本文以俄勒冈州为例，你也可以根据自己的访问线路和资源情况选择其他区域；区域本身不保证某一种访问速度。
+接着选择：
 
-创建页面的区域、镜像、套餐和实例名称需在付款创建前核对清楚。首次使用可参照 [AWS Lightsail 入门文档](https://docs.aws.amazon.com/lightsail/latest/userguide/getting-started-with-amazon-lightsail.html)。
+1. **Select a platform → Linux operating system**。
+2. **Select a blueprint → Debian 12**。
 
-### 2. 选择 Linux 和 Debian 12
+图中是 Debian 12.15，之后的小版本号可能变化，本文按 Debian 12 操作。
 
-在 **Select a platform** 中选择 **Linux operating system**，在 **Select a blueprint** 中选择 **Debian 12**。截图显示的是 Debian 12.15，后续维护版本号可能变化，本文命令按 Debian 12 编写。
-
-配图说明：文中五张配图依据实际操作截图，经 AI 整理为示意图，关键选项和数值已与原素材核对；配图不作为实时控制台状态或节点连通性的证明。
+> 配图说明：文中五张图片依据实际操作截图，经 AI 整理为示意图，关键选项和数值已与原素材核对。它们用于说明操作位置，不代表当前服务器或节点的实时状态。
 
 ![图1 选择 Linux operating system 和 Debian 12](assets/01-debian12.png)
 
-*图1：Linux 平台与 Debian 12 选择示意，依据提供的操作截图整理。*
+*图1：选择 Linux 系统和 Debian 12。*
 
-### 3. 选择通用套餐和双栈网络
+### 2. 选择通用型、双栈和套餐
 
-在 **Select a plan type** 中选择 **General purpose**，在网络类型中选择 **Dual-stack**。这样可获得公网 IPv4 和 IPv6；本文先用 IPv4 完成连接，减少客户端网络差异带来的干扰。
+套餐类型选择 **General purpose**，网络类型选择 **Dual-stack**。双栈同时提供公网 IPv4 和 IPv6，本文先用 IPv4 把连接跑通。
 
 ![图2 选择 General purpose 和 Dual-stack](assets/02-dual-stack.png)
 
-*图2：通用型套餐与双栈网络示意。页面中的免费额度提示需结合自己的账号资格阅读。*
+*图2：选择通用型和双栈网络。免费额度提示要结合自己的账号资格查看。*
 
-截图选择的是每月 7 美元的 1 GB 内存套餐，适合作为本文的配置示例。不要因为教程截图选中了某档套餐，就忽略自己账号上显示的实际费用。
+这里用每月 **7 美元**的方案举例：1 GB 内存、2 vCPU、40 GB SSD、2 TB 套餐流量。创建前再看一遍页面价格，实际套餐和费用以 [AWS 官方价表](https://aws.amazon.com/lightsail/pricing/) 为准。
 
 ![图3 每月7美元套餐示例](assets/03-plan.png)
 
-*图3：每月 7 美元套餐选择示意，创建时请再次核对价格。*
+*图3：示例选择每月 7 美元方案。*
 
-### 4. 填写名称并创建
+注意，**流入和流出都会消耗套餐流量额度**。节点转发文件时通常同时产生流入和流出，所以“2 TB 套餐”不等于“能净下载 2 TB 文件”。超额收费按 AWS 的流出规则计算，详见 [官方流量说明](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-faq-data-transfer-allowance.html)。
 
-实例名称可以填写 `test2`，也可以自定义容易识别的名字。自动快照属于可选项目，启用前了解存储费用。核对区域、系统、套餐、数量及收费信息后，再由你决定是否点击 **Create instance**。
+### 3. 填好名称，创建实例
+
+实例名称可以填 `test2`，也可以换成自己容易识别的名字。核对区域、系统、套餐、数量和费用后，再点击 **Create instance**。自动快照是可选项，启用前了解额外存储费用。
 
 ![图4 填写实例名称并核对创建选项](assets/04-instance-name.png)
 
-*图4：实例名称示例。创建操作会产生云资源及相应费用。*
+*图4：填写名称，检查创建选项。*
 
-等待实例进入 **Running**。接着在 Lightsail 的网络功能中创建静态公网 IPv4，并绑定到同区域的这台实例，客户端后续使用这个地址。普通动态公网 IPv4 在实例停止再启动后可能改变，具体操作见 [创建并绑定静态 IP](https://docs.aws.amazon.com/lightsail/latest/userguide/lightsail-create-static-ip.html)。
+等实例状态变为 **Running**，再创建并绑定一个**同区域的静态公网 IPv4**，后面客户端就填这个地址。普通动态公网 IPv4 在停止、重新启动实例后可能改变，绑定步骤见 [创建静态 IP](https://docs.aws.amazon.com/lightsail/latest/userguide/lightsail-create-static-ip.html)。
 
-## 三、先配置防火墙，再连接服务器
+## 三、机器的端口是怎么开放的？
 
-打开实例详情，进入 **Networking**。本文只使用一个节点端口，不设置端口跳跃。
+下面先把机器用到的端口放行。记住两个数字：**TCP 22 用于 SSH，UDP 26818 用于 Hysteria 2**。端口没有放行时，即使程序装好了，客户端也可能一直超时。
 
-在 **IPv4 Firewall** 中保留 SSH 所需的 TCP 22，并添加一条自定义规则：协议选 **UDP**，端口填 `26818`。如果所有客户端都来自固定公网 IP，可以将节点规则的来源限制到这些地址；如果需要在不同网络使用，再根据实际需要设置来源范围。
+打开实例详情，进入 **Networking → IPv4 Firewall**：
 
-SSH 使用本机终端时，应尽量限制到自己的公网 IP；使用 Lightsail 的浏览器 SSH 时，需要保留其支持的浏览器连接来源设置，按 [AWS 防火墙说明](https://docs.aws.amazon.com/lightsail/latest/userguide/understanding-firewall-and-port-mappings-in-amazon-lightsail.html) 操作，避免把自己锁在服务器外。
+1. 保留 SSH 的 **TCP 22** 规则。
+2. 点击 **Add rule**，Application 选 **Custom**，Protocol 选 **UDP**，Port 填 **26818**，再保存规则。
+3. 来源可以限制为自己的客户端公网 IP；需要从多个网络使用时，再按实际需要设置该 UDP 规则的来源范围。
 
-**只开放 TCP 26818 无法代替 UDP 26818。** IPv6 的防火墙与 IPv4 独立；计划用 IPv6 连接时，还需要在 **IPv6 Firewall** 配置对应 UDP 规则。本文不要求开放 All TCP、All UDP，也不要求开放 TCP 80 或 TCP 443。
+如果编辑 SSH 规则并选择 **Restrict to IP address**，使用控制台浏览器终端时，还要保留 **Allow Lightsail browser SSH/RDP**，否则可能把浏览器 SSH 一起挡住。[AWS 官方操作步骤](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-editing-firewall-rules.html)
 
-完成后进入 **Connect → Connect using SSH**，打开浏览器终端。先确认当前系统：
+本文不使用端口跳跃，不需要开放 All TCP 或 All UDP。**只开放 TCP 26818 不能代替 UDP 26818。** 如果以后用 IPv6 连接，还需在独立的 **IPv6 Firewall** 配置相应 UDP 规则。
+
+## 四、SSH 怎么连接 AWS 服务器？
+
+进入实例的 **Connect** 页面，点击 **Connect using SSH**。看到命令行后，先确认系统和当前用户：
 
 ```bash
 cat /etc/os-release
 whoami
 ```
 
-本文后续命令在服务器 SSH 终端执行，输入以下命令进入 root 会话：
+然后输入：
 
 ```bash
 sudo -i
 ```
 
-## 四、使用官方脚本安装 Hysteria 2
+后面的安装和服务端配置命令，都在这个 **AWS 服务器的 SSH 窗口**执行。客户端命令则留到自己电脑上执行，先不要混在一起。
 
-先安装所需工具，再下载官方安装脚本：
+## 五、在 AWS 服务器上安装 Hysteria 2
+
+先安装工具，再下载官方脚本：
 
 ```bash
 apt-get update
@@ -91,24 +98,26 @@ apt-get install -y curl ca-certificates openssl nano less
 curl -fsSL https://get.hy2.sh/ -o /root/hysteria-install.sh
 ```
 
-可以先用 `less /root/hysteria-install.sh` 查看脚本，按 `q` 退出。确认下载成功且来源正确后，执行：
+确认下载成功，可以用 `less /root/hysteria-install.sh` 查看内容，按 `q` 退出，再运行：
 
 ```bash
 bash /root/hysteria-install.sh
 hysteria version
 ```
 
-官方安装器会安装程序、systemd 服务和示例配置，**仍需手动完成服务端配置**，操作范围见 [官方安装脚本说明](https://v2.hysteria.network/docs/getting-started/Server-Installation-Script/)。请不要在下载失败后继续执行旧文件，也不要为了下载成功而关闭 HTTPS 证书验证。
+下载报错时先停下来处理，不要继续运行上次遗留的脚本，也不要关闭 HTTPS 证书校验。
 
 ![图5 安装器输出成功提示](assets/05-installer-output.png)
 
-*图5：安装阶段的输出示意。下方采用官方手动配置流程；图中提示不代表服务已经启动或客户端已经连通。*
+*图5：安装阶段的输出示意。*
 
-## 五、配置证书、密码和监听端口
+这里使用 [Hysteria 官方安装器](https://v2.hysteria.network/docs/getting-started/Server-Installation-Script/)，它会安装程序、systemd 服务和示例配置。**看到安装成功后，先别急着导入客户端，接下来还要填端口、密码和证书。**
 
-### 1. 生成自签名证书和独立密码
+## 六、端口、密码和证书怎么填？
 
-在服务器 root 终端执行：
+### 1. 先生成证书和密码
+
+继续在服务器的 root 终端执行：
 
 ```bash
 hysteria cert --host aws-hy2.local \
@@ -121,11 +130,11 @@ chmod 640 /etc/hysteria/server.key
 openssl rand -hex 24
 ```
 
-`hysteria cert` 的参数可在 [Hysteria 官方证书命令源码](https://github.com/apernet/hysteria/blob/master/app/cmd/cert.go) 中核对。它会生成证书和私钥；最后一条 OpenSSL 命令生成随机密码，将这串密码安全保存，下一步与客户端都要使用同一串值。
+最后一条命令会生成随机密码，把它保存好，服务端和客户端都填同一串值。证书命令见 [官方已发布版本](https://github.com/HyNetworks/hysteria/blob/app/v2.13.0/app/cmd/cert.go)。
 
-`aws-hy2.local` 是本文设置的证书名称，稍后作为客户端 SNI；它不是 AWS 域名，也不需要将它解析到公网。私钥 `server.key` 留在服务器上，不要上传或发给他人。上述文件权限适用于官方安装器默认的 `hysteria` 服务用户。
+`aws-hy2.local` 是这里设置的证书名称，后面作为客户端 SNI，不需要把它解析到公网。`server.crt` 是公有证书，`server.key` 是私钥；私钥留在服务器，不要发给别人。上面的权限适用于官方安装器默认的 `hysteria` 用户。
 
-### 2. 写入服务端配置
+### 2. 把配置写进文件
 
 打开配置文件：
 
@@ -133,7 +142,7 @@ openssl rand -hex 24
 nano /etc/hysteria/config.yaml
 ```
 
-将文件中的示例内容替换为以下配置，并把密码占位文字换成刚才生成的随机密码。YAML 使用空格缩进，不要使用 Tab：
+将原有示例内容替换为下面这段，并把密码占位文字换成刚生成的密码。缩进使用空格，不要用 Tab：
 
 ```yaml
 listen: :26818
@@ -147,9 +156,9 @@ auth:
   password: "替换为刚才生成的随机密码"
 ```
 
-在 nano 中按 `Ctrl+O` 保存，回车确认文件名，再按 `Ctrl+X` 退出。此处端口必须和 Lightsail 防火墙规则一致；认证与 TLS 字段说明见 [服务端完整配置](https://v2.hysteria.network/docs/advanced/Full-Server-Config/)。
+按 `Ctrl+O`，回车保存，再按 `Ctrl+X` 退出。这里的 **26818 必须和 AWS 防火墙、客户端里的端口一致**。[服务端字段说明](https://v2.hysteria.network/docs/advanced/Full-Server-Config/)
 
-收紧配置文件权限后启动服务：
+接着设置权限并启动：
 
 ```bash
 chown root:hysteria /etc/hysteria/config.yaml
@@ -157,9 +166,9 @@ chmod 640 /etc/hysteria/config.yaml
 systemctl enable --now hysteria-server.service
 ```
 
-这适用于首次启动；以后修改配置后，运行 `systemctl restart hysteria-server.service` 使新配置生效。
+以后改过配置，再执行 `systemctl restart hysteria-server.service`，新配置才会生效。
 
-### 3. 检查服务与证书指纹
+### 3. 检查服务，再复制证书指纹
 
 ```bash
 systemctl status hysteria-server.service --no-pager
@@ -168,17 +177,17 @@ journalctl -u hysteria-server.service -n 50 --no-pager
 openssl x509 -noout -fingerprint -sha256 -in /etc/hysteria/server.crt
 ```
 
-依次检查：服务状态应为 `active (running)`；UDP 列表能找到 `26818`；近期日志没有证书、配置或认证相关启动错误。最后一条命令输出证书 SHA-256 指纹，复制等号后面的指纹值，供客户端固定验证服务器身份。
+先看服务是不是 `active (running)`，再看 UDP 列表有没有 `26818`，最后看日志中有没有启动错误。最后一条命令输出证书指纹，**复制等号后面的 SHA-256 值**，客户端会用到它。
 
-这些检查通过，表示服务器端准备就绪；最终能否使用，还要完成下一节的客户端握手和实际访问测试。
+到这里，先记好四项：**静态公网 IPv4、端口 26818、密码、证书指纹**。
 
-## 六、配置客户端
+## 七、安装完成后，客户端怎么连接？
 
-### 1. 先保存四项连接信息
+### 1. 先用官方客户端确认连接
 
-准备自己的**静态公网 IPv4、端口 26818、随机密码、证书 SHA-256 指纹**。下方 `203.0.113.10` 是文档示例地址，必须替换；所有密码与指纹占位文字也必须替换。
+在自己的电脑上，从 [官方页面](https://v2.hysteria.network/docs/getting-started/Installation/) 下载对应系统和 CPU 架构的程序，把下面的配置保存为 `client.yaml`。
 
-为了避免不同图形客户端对证书参数的处理差异，先给出 [Hysteria 官方客户端](https://v2.hysteria.network/docs/getting-started/Installation/) 可直接识别的配置。按操作系统与 CPU 架构下载对应程序，将配置保存为本机的 `client.yaml`：
+`203.0.113.10` 是文档示例地址，必须改成自己的静态公网 IPv4；密码和指纹也要换掉：
 
 ```yaml
 server: "203.0.113.10:26818"
@@ -193,68 +202,83 @@ socks5:
   listen: 127.0.0.1:5678
 ```
 
-这里的 `insecure: true` 与正确的 `pinSHA256` **配套使用**，不能只保留关闭验证的选项。也可以改为显式信任自己的证书，具体方式见 [客户端 TLS 说明](https://v2.hysteria.network/docs/getting-started/Client/)。证书更换后，需要同步更新客户端指纹。
+这里 `insecure: true` 必须和正确的 `pinSHA256` 配套，不能只留下关闭校验的选项。也可以改成显式信任自己的证书，见 [官方 TLS 说明](https://v2.hysteria.network/docs/getting-started/Client/)。
 
-将下载的程序放在配置文件所在目录，按实际文件名运行。Linux 示例：
+把程序和配置放在同一目录，按实际文件名运行。Linux amd64 示例：
 
 ```bash
 chmod +x ./hysteria-linux-amd64
 ./hysteria-linux-amd64 client -c client.yaml
 ```
 
-Windows 在 PowerShell 中的示例：
+Windows amd64 在 PowerShell 中运行：
 
 ```powershell
 .\hysteria-windows-amd64.exe client -c client.yaml
 ```
 
-上述文件名仅对应 amd64 下载包；其他平台使用对应的程序名。看到 `connected to server` 后，再做下文的访问测试。
+其他平台换成对应的程序名。看到 `connected to server` 后，继续做下一节的实际访问测试。
 
-### 2. 使用 v2rayN 导入分享链接
+### 2. 习惯 v2rayN 的话，怎么从剪贴板导入？
 
-也可以将连接信息整理为分享链接，导入 v2rayN。模板如下，所有占位项都要替换成自己的值：
+也可以将连接信息整理为分享链接。把密码、IP 和指纹替换为自己的值：
 
 ```text
 hysteria2://YOUR_PASSWORD@203.0.113.10:26818/?sni=aws-hy2.local&insecure=1&pinSHA256=YOUR_CERT_SHA256#AWS-Hysteria2
 ```
 
-官方 URI 中密码若包含特殊字符，需要做 URL 编码；本文由 `openssl rand -hex 24` 生成的十六进制密码没有这类特殊字符。链接字段见 [Hysteria 2 URI 规范](https://v2.hysteria.network/docs/developers/URI-Scheme/)。
+本文生成的是十六进制密码，可直接替换；自行设置的密码含特殊字符时，要按 [官方 URI 规范](https://v2.hysteria.network/docs/developers/URI-Scheme/) 编码。真实分享链接包含连接凭据，不要放进公开截图。
 
-从 [v2rayN 官方仓库](https://github.com/2dust/v2rayN) 获取客户端后，复制填好的链接，通过“从剪贴板导入批量 URL”或当前版本的对应入口导入。打开节点编辑页，逐项核对服务器地址、端口、密码、SNI 和证书验证信息，再设为活动节点。
+从 [v2rayN 官方仓库](https://github.com/2dust/v2rayN) 获取客户端后，按下面顺序操作：
 
-**不要假定每个版本都会正确保留分享链接中的指纹。** v2rayN 的内核和证书设置曾有调整，维护者说明见 [证书验证参数说明](https://github.com/2dust/v2rayN/discussions/9460)。如果当前版本要求完整证书，可以通过可信 SSH 连接读取服务器的公有证书 `server.crt`，按该版本说明导入；不要复制私钥。仍无法配置时，先使用上面的官方客户端验证，不要靠关闭全部证书验证解决问题。
+1. 复制完整链接，通过“**从剪贴板导入批量 URL**”或当前版本的对应入口导入。
+2. 核对服务器 IP、26818 端口、密码和 `aws-hy2.local` SNI。
+3. **确认使用的内核，以及实际生成的证书验证配置，再连接节点。**
 
-## 七、怎样确认节点真正可用
+以 **v2rayN 7.25.6** 为例，Xray 分支会将该指纹写入 `pinnedPeerCertSha256`；使用时要核对生成的 TLS 配置确实包含自己的指纹，不能只看节点编辑页。[Xray 配置规则](https://github.com/2dust/v2rayN/blob/7.25.6/v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs#L361-L364)
 
-先确认客户端已经和服务器完成握手，再通过本机 SOCKS5 端口发起请求。使用前面官方客户端的 `5678` 配置时，在本机执行：
+**同版本的 sing-box 分支不能只靠这个分享链接完成指纹校验。** 如果使用它，需通过可信 SSH 读取 `/etc/hysteria/server.crt`，导入完整公有证书 PEM，确认实际 TLS 配置含 `certificate`、`insecure: false`，并使用 `server_name: aws-hy2.local`。不要复制 `server.key`。不知道怎样检查实际配置时，先继续使用上面的官方客户端。[sing-box 配置规则](https://github.com/2dust/v2rayN/blob/7.25.6/v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs#L427-L501)
+
+证书检查完成后，再设为活动节点并测试访问。
+
+## 八、怎么判断节点真正连通了？
+
+先确认客户端握手成功，再从自己的电脑通过本机 SOCKS5 端口发起请求：
 
 ```bash
 curl --fail --show-error --socks5-hostname 127.0.0.1:5678 https://example.com/
 ```
 
-Windows PowerShell 请使用 `curl.exe`。如果使用 v2rayN，则将端口改成其设置里实际显示的 SOCKS 端口，不能直接假设也是 `5678`。
+Windows PowerShell 使用 `curl.exe`。如果用 v2rayN，把 `5678` 改成它实际配置的 SOCKS 端口。
 
-应能收到 Example Domain 页面。接着用同一代理访问自己日常使用的网站，检查客户端日志、实际请求及服务器流量情况。需要确认出口时，可访问自己信任的公网 IP 查询服务，核对出口是否为这台 AWS 实例的预期地址。
+收到 Example Domain 页面后，再用同一代理访问自己常用的网站。需要确认出口时，访问自己信任的公网 IP 查询服务，看是否为这台 AWS 实例的预期地址。
 
-浏览器普通访问是否走代理，取决于系统代理、浏览器代理或客户端 TUN 设置。仅选中一个节点，或看到“已连接”的按钮，不代表所有应用已经经过它；上面的显式 SOCKS5 请求可以单独核验这条路径。
+这里再分清一次：**26818 是服务器的 UDP 端口，5678 是电脑上的 SOCKS5 端口**，后者不需要在 AWS 防火墙开放。浏览器和其他应用是否走节点，取决于它们的代理或 TUN 设置；上面的命令显式指定了代理，便于单独检查这条路径。
 
-最终检查应同时满足：服务器服务在运行、UDP 端口监听正常、客户端握手成功、实际请求经过预期节点。普通网页的 TCP `curl -I` 或 TCP 端口检测不能代替 Hysteria 2 的 UDP 握手检查。
+“安装成功”“节点已选中”或一个延迟数字，都不能代替实际请求。服务运行、客户端握手、真实访问都通过，才算这次搭建跑通。
 
-## 八、连接失败时按什么顺序排查
+## 九、连接失败应该怎么解决？
 
-- **SSH 打不开：** 先确认实例为 Running、公网地址正确、TCP 22 与浏览器 SSH 来源设置正确，再检查自己使用的连接方式。
-- **服务启动失败：** 查看 `journalctl`，检查 YAML 缩进、密码引号、证书路径以及 `hysteria` 用户能否读取配置和私钥。
-- **客户端一直超时：** 核对静态公网 IP、实际 UDP 端口、Lightsail 对应 IP 协议族的防火墙，以及系统防火墙是否放行同一端口。本地网络若限制 UDP，也会影响连接。
-- **证书验证失败：** 从可信 SSH 终端重新读取指纹，核对客户端参数；证书重新生成后旧指纹失效。
-- **握手成功但网页打不开：** 检查本机代理端口、应用是否使用该代理、DNS 及客户端路由设置。
-- **能用但不稳定：** 先看服务器 CPU、流量、日志和本地网络，不要先填入远高于实际线路的带宽数值。没有设置带宽参数也可以先测试基本连接。
+如果一直连不上，按这个顺序检查：
 
-若系统使用 UFW，先运行 `ufw status verbose` 查看现状；已经启用时，按既有策略添加 `26818/udp` 规则并保留 SSH。新装系统无需为了本教程先启用一套新防火墙，也不要清空现有 iptables/nftables 规则。安装报错应先看错误原因，不必直接重装系统或执行 DD。
+1. **实例和 IP：** 实例是否为 Running，客户端填的是不是当前绑定的静态公网 IP？
+2. **端口：** 服务端、防火墙、客户端是不是同一个 `26818/UDP`？不要只检查 TCP。
+3. **防火墙：** Lightsail 和系统防火墙是否都允许该端口？IPv4、IPv6 规则是否对应？SSH 另查 TCP 22 和浏览器 SSH 来源设置。
+4. **服务：** `systemctl status` 是否为 active？日志有没有配置缩进、证书路径或权限错误？
+5. **客户端：** 密码、SNI、证书指纹或完整证书是否一致？v2rayN 实际内核是否按上节配置了证书验证？
+6. **实际请求：** 握手后仍打不开网页，再查本机 SOCKS 端口、DNS、路由以及本地网络是否限制 UDP。
 
-## 九、后续维护和费用检查
+系统如果使用 UFW，先看 `ufw status verbose`；已启用时按既有规则放行 `26818/udp` 并保留 SSH。不要为了排错清空已有防火墙，也不必遇到安装报错就重装或 DD 系统。需要求助时，提供系统版本、区域、服务日志和客户端报错，遮挡密码、私钥和完整分享链接。
 
-保存自己的配置记录，定期检查服务日志和系统更新。自签名证书需要在到期前更新；重新生成证书后同步更换客户端指纹。如果以后改成域名与受信任证书，可以按 [官方服务端指南](https://v2.hysteria.network/docs/getting-started/Server/) 配置 ACME，届时再根据证书验证方式开放所需端口。
+## 十、用起来之后，还要注意什么？
 
-普通 Lightsail 实例停止后仍会计费；确定不再使用时，按控制台流程删除不需要的资源，并单独检查快照、磁盘及静态 IP。静态 IPv4 绑定实例时与空置时的计费不同，具体以 [AWS 计费 FAQ](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-frequently-asked-questions-faq-billing-and-account-management.html) 为准。
+定期检查日志、系统更新和流量使用。证书到期前更新，并同步更新客户端指纹或信任的证书。
 
-搭建的终点是“服务运行、客户端握手、实际访问”三项都通过。把端口、证书和客户端配置对应起来，后续排查会清楚得多。
+<details>
+<summary>补充：已有证书如何更新？</summary>
+
+`hysteria cert` 默认生成一年有效期的证书，并会拒绝覆盖已有文件。续期时先备份并处理旧文件，重新核对权限、重启服务，再同步更新客户端指纹或信任的证书。[证书命令说明](https://github.com/HyNetworks/hysteria/blob/app/v2.13.0/app/cmd/cert.go)
+
+</details>
+
+普通 Lightsail 实例**停止后仍会计费**。确定不用时，按控制台流程删除不需要的资源，并单独检查快照、磁盘和空置静态 IP；具体规则见 [AWS 计费 FAQ](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-frequently-asked-questions-faq-billing-and-account-management.html)。
