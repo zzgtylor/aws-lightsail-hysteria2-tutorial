@@ -25,7 +25,7 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 图中是 Debian 12.15，之后的小版本号可能变化，本文按 Debian 12 操作。
 
-> 配图说明：图1–4、图7依据实际操作截图，经 AI 整理为示意图；图5–6、图8–10是按本文步骤绘制的操作、配置和测试示意图。图中选项、命令和占位值与相邻正文对应；示意图不代表当前 AWS 实例的实时状态或实际连接测试结果。
+> 配图说明：图5是提供的 Lightsail 实操原截图，仅裁去账号和 IP 区域，规则表格未重绘；图1–4、图7依据实际操作截图，经 AI 整理为示意图；图6、图8–10是按本文步骤绘制的操作、配置和测试示意图。图片与相邻正文对应；截图记录的是拍摄时的配置，示意图不代表当前 AWS 实例的实时状态或实际连接测试结果。
 
 ![图1 选择 Linux operating system 和 Debian 12](assets/01-debian12.png)
 
@@ -75,9 +75,9 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 这是一组向任意 IPv4 来源开放全部 TCP/UDP 端口的配置，也会覆盖实例上其他监听的 TCP/UDP 服务。**IPv6 Firewall 仍是独立配置**，不会因为这三条 IPv4 规则自动放行。
 
-![图5 按截图设置All TCP All UDP和Ping IPv4入站规则的示意](assets/06-firewall.svg)
+![图5 Lightsail防火墙实操截图：All TCP、All UDP和Ping IPv4](assets/06-firewall-screenshot.png)
 
-*图5：与所提供截图一致的三条 IPv4 入站规则：All TCP、All UDP、Ping (ICMP) - IPv4，来源均为 Any IPv4 address。*
+*图5：Lightsail 防火墙实操原截图，三条规则为 All TCP、All UDP、Ping (ICMP) - IPv4，来源均为 Any IPv4 address。仅裁去账号和 IP 区域，规则内容未改动。*
 
 ## 四、SSH 怎么连接 AWS 服务器？
 
