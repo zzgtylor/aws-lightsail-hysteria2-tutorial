@@ -1,16 +1,18 @@
 # AWS Lightsail 服务器如何搭建 Hysteria 2 节点：一篇讲清从创建到连通
 
-想自己搭一个 VPS 节点，可以按这条顺序完成：**准备账号 → 创建服务器 → 开放端口 → SSH 连接 → 安装配置 → 连接客户端 → 检查能否使用。**
-
-这篇教程使用 AWS Lightsail、Debian 12 和 Hysteria 2。示例区域是美国俄勒冈州 `us-west-2`，节点端口统一使用 `26818/UDP`。安装完成后，直接复制脚本生成的完整节点链接，导入支持 Hysteria 2 的 v2rayN 或 Shadowrocket。
+本文使用 **AWS Lightsail + Debian 12 + Hysteria 2**，示例区域为俄勒冈州 `us-west-2`，端口统一使用 `26818/UDP`。流程是：**创建实例 → 开放端口 → 运行安装脚本 → 复制链接导入 v2rayN 或 Shadowrocket → 开启连接。**
 
 ## 一、开始之前，要准备什么？
 
-先准备好能正常使用 Lightsail 的 AWS 账号、一台电脑，以及支持 Hysteria 2 的客户端。VPS 可以理解为一台通过 SSH 远程操作的 Linux 电脑；Hysteria 2 则是我们接下来要安装的节点程序。
+准备一个能使用 Lightsail 的 **AWS 账号**、一台电脑，以及支持 Hysteria 2 的 **v2rayN 或 Shadowrocket**。本文使用全新空白 Debian 12 实例；没有域名也可选择自签名证书。
 
-没有域名也能按视频的自签名证书路线操作。客户端直接导入脚本输出的链接，证书选项说明放在第六节的折叠补充中。
+登录 [AWS 控制台](https://console.aws.amazon.com/)，在服务搜索框搜索 **Lightsail**，或点击“最近访问”中的 Lightsail 入口。
 
-Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些项目，需要看自己的账号页面；不要把试用额度理解成永久免费。首次使用可以先阅读 [AWS Lightsail 入门](https://docs.aws.amazon.com/lightsail/latest/userguide/getting-started-with-amazon-lightsail.html)。本文按全新空白 Debian 12 实例编写；已有其他业务的服务器不直接沿用下面的第三方菜单脚本。
+![补充图 AWS控制台首页及Lightsail入口](assets/00-aws-console.png)
+
+*补充图：AWS 控制台首页，左侧“最近访问”中可见 Lightsail。使用提供的原始截图。*
+
+Lightsail 是收费服务，新账号额度以自己的账号页面为准；创建前核对价格和流量。首次使用可参考 [AWS Lightsail 入门](https://docs.aws.amazon.com/lightsail/latest/userguide/getting-started-with-amazon-lightsail.html)。
 
 ## 二、AWS 服务器怎么创建？
 
@@ -25,7 +27,7 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 图中是 Debian 12.15，之后的小版本号可能变化，本文按 Debian 12 操作。
 
-> 配图说明：图5是提供的 Lightsail 实操原截图，仅裁去账号和 IP 区域，规则表格未重绘；图1–4、图7依据实际操作截图，经 AI 整理为示意图；图6、图8–10是按本文步骤绘制的操作、配置和测试示意图。图片与相邻正文对应；截图记录的是拍摄时的配置，示意图不代表当前 AWS 实例的实时状态或实际连接测试结果。
+> 配图说明：第一节 AWS 首页使用原截图；图5为实操原截图的裁剪版；图1–4、图7为依据截图经 AI 整理的示意图；图6、图8–10为步骤示意图。截图记录拍摄时的界面，示意图不代表实时部署或连通结果。
 
 ![图1 选择 Linux operating system 和 Debian 12](assets/01-debian12.png)
 
@@ -79,86 +81,60 @@ Lightsail 是收费服务。新账号是否有可用额度、额度覆盖哪些�
 
 *图5：Lightsail 防火墙实操原截图，三条规则为 All TCP、All UDP、Ping (ICMP) - IPv4，来源均为 Any IPv4 address。仅裁去账号和 IP 区域，规则内容未改动。*
 
-## 四、SSH 怎么连接 AWS 服务器？
+## 四、打开终端，切换 root 用户
 
-进入实例的 **Connect** 页面，点击 **Connect using SSH**。看到命令行后，先确认系统和当前用户：
-
-```bash
-cat /etc/os-release
-whoami
-```
-
-然后输入：
+在实例的 **Connect → Connect using SSH** 打开终端，直接输入：
 
 ```bash
 sudo -i
 ```
 
-后面的安装和服务端配置命令，都在这个 **AWS 服务器的 SSH 窗口**执行。客户端导入操作留到自己的电脑或手机上完成。
+接着在同一个终端执行第五节的安装命令。
 
-![图6 浏览器SSH连接与确认系统和用户的步骤示意](assets/07-ssh.svg)
+![图6 打开服务器终端后直接执行sudo -i](assets/07-ssh.svg)
 
-*图6：从 Connect using SSH 打开终端，依次确认系统、用户并执行 sudo -i。图中展示待执行命令。*
+*图6：打开终端，输入 sudo -i，继续安装。*
 
-## 五、运行视频中的菜单安装脚本
+## 五、一行命令安装 Hysteria 2
 
-这里沿用素材中的 [flame1ce/hysteria2-install 菜单脚本](https://github.com/flame1ce/hysteria2-install/blob/110a498512730228fdd579eaf7f8c2a45c423112/hysteria2-install-main/hy2/hysteria.sh)。它是第三方脚本，不是 AWS 或 Hysteria 官方安装器；本节仅按**新建空白实例**演示。执行前请阅读下方来源说明。
-
-继续在服务器的 root SSH 窗口下载脚本：
+复制下面这一整行，在刚才的终端中执行：
 
 ```bash
-apt-get update
-apt-get install -y curl ca-certificates
-curl -fsSL https://raw.githubusercontent.com/flame1ce/hysteria2-install/110a498512730228fdd579eaf7f8c2a45c423112/hysteria2-install-main/hy2/hysteria.sh -o /root/hysteria.sh
+wget -N --no-check-certificate https://raw.githubusercontent.com/flame1ce/hysteria2-install/main/hysteria2-install-main/hy2/hysteria.sh && bash hysteria.sh
 ```
 
-确认下载成功后运行；下载报错时先停止，不要继续执行旧文件：
-
-```bash
-bash /root/hysteria.sh
-```
-
-看到安装菜单后，输入 **1**，接着按第六节填写。脚本会继续完成安装、配置，并显示客户端链接。
+出现菜单后，输入 **1** 安装，再按第六节设置参数。
 
 ![图7 安装器输出成功提示](assets/05-installer-output.png)
 
-*图7：素材整理的安装阶段输出示意；后续参数和链接以自己终端的实际提示为准。*
+*图7：安装阶段输出示意，参数和链接以自己的终端提示为准。*
 
 <details>
-<summary>脚本来源和已知行为（使用前阅读）</summary>
+<summary>脚本说明与缺少 wget 的处理</summary>
 
-这里固定了入口脚本的版本，后续组件仍由它动态下载。源码中包含清空 IPv4 NAT PREROUTING、放宽证书文件权限等操作，单端口模式也会改写 NAT；因此不要在已有业务或自定义转发规则的服务器直接运行。本稿只核对了源码和素材流程，没有在 AWS 上执行这段脚本，也不把它描述为已完成安全加固的方案。
+来源为 [flame1ce/hysteria2-install](https://github.com/flame1ce/hysteria2-install/blob/main/hysteria2-install-main/hy2/hysteria.sh)，使用会更新的 `main` 分支。脚本会清空 IPv4 NAT PREROUTING，并放宽自签证书私钥权限，适用于新建空白实例；命令中的 `--no-check-certificate` 跳过下载证书校验。
 
-视频的默认自签方案使用 `/etc/hysteria/private.key`，脚本将其权限设为 777。第六节安装完成后，若使用默认 `hysteria` 服务用户，可收紧为：
-
-```bash
-chown root:hysteria /etc/hysteria/private.key
-chmod 640 /etc/hysteria/private.key
-```
-
-原有服务用户、已有证书或 ACME 路线请按实际路径处理，不照抄这一自签路径。
+若提示 `wget: command not found`，先执行 `apt-get update && apt-get install -y wget`，再运行上面的一行命令。
 
 </details>
 
 ## 六、按提示设置参数，复制节点链接
 
-跟着菜单完成下面几项即可：
+按提示依次填写：
 
-1. 安装菜单选择 **1：安装 Hysteria 2**。
-2. 按提示选择证书方案；视频演示的是**自签名证书**。
-3. UDP 端口填 **26818**，选择**单端口、不启用端口跳跃**。
-4. 设置由字母和数字组成的独立长密码，其余项目按终端提示完成。
+1. **证书：** 选择 **1，自签名证书**，与视频一致。
+2. **UDP 端口：** 填 **26818**。
+3. **端口模式：** 选择 **1，单端口**。
+4. **连接密码：** 自己设置独立的长字母数字密码，其余项目按提示完成。
 
-配置完成后，终端会显示以 **`hysteria2://`** 开头的节点链接。**复制完整一行**，不要只复制服务器 IP 或其中一段。链接已包含服务器、端口、密码及相应选项，接下来直接导入客户端。
-
-本次安装结束后如果没有复制到，可以回到该脚本菜单选择 **5：显示客户端配置**，重新查看链接。真实链接含连接密码，请只自己保存。
+完成后，复制终端输出的**整条 `hysteria2://` 节点链接**，接下来直接导入客户端。没复制到时，可返回菜单选择 **5：显示客户端配置**。链接包含密码，请自己保存。
 
 **证书提示：这个素材脚本输出的链接含 `insecure=1`，表示跳过服务器证书校验。**
 
 <details>
 <summary>证书校验补充</summary>
 
-复制导入会沿用链接中的 TLS 选项，不代表客户端已验证服务器身份。该脚本即使选择 ACME，也仍输出 `insecure=1`。正式使用受信域名证书时，应在客户端确认域名匹配并保持证书验证开启；自签证书则需使用客户端实际支持的证书信任或指纹验证方式。不要只因导入成功就认为证书已经验证。[Hysteria 官方 URI 说明](https://v2.hysteria.network/docs/developers/URI-Scheme/)
+导入会沿用链接的 TLS 选项。这个脚本即使选择 ACME，也输出 `insecure=1`；使用受信域名证书时，应确认域名匹配并开启验证。自签证书的信任或指纹设置需以客户端支持情况为准。[Hysteria 官方 URI 说明](https://v2.hysteria.network/docs/developers/URI-Scheme/)
 
 </details>
 
@@ -170,14 +146,12 @@ chmod 640 /etc/hysteria/private.key
 
 ### Windows：v2rayN
 
-使用支持 Hysteria 2 的 [v2rayN](https://github.com/2dust/v2rayN)，按下面几步操作：
+打开支持 Hysteria 2 的 [v2rayN](https://github.com/2dust/v2rayN)：
 
 1. 复制第六节输出的**完整节点链接**。
-2. 打开 v2rayN，在节点列表区域按 **Ctrl+V**，或选择“**从剪贴板导入分享链接**”（旧版可能叫“从剪贴板导入批量 URL”）。
+2. 在节点列表区域按 **Ctrl+V**，或选择“**从剪贴板导入分享链接**”。
 3. 选中刚导入的节点，设置为**活动节点**。
 4. 在“系统代理”中选择“**自动配置系统代理**”。
-
-导入后即可通过 v2rayN 使用这个节点。[v2rayN 导入说明](https://github.com/2dust/v2rayN/wiki/Description-of-some-ui)
 
 ### iPhone / iPad：Shadowrocket
 
@@ -188,7 +162,7 @@ chmod 640 /etc/hysteria/private.key
 3. 点选刚导入的节点，打开**连接开关**。
 4. 首次连接时，按系统提示允许添加 VPN 配置。
 
-两边都是导入脚本生成的链接，通常不需要逐项重填 IP、端口和密码。若客户端无法识别，先检查链接是否复制完整，以及版本是否支持 Hysteria 2。
+无法识别时，检查链接是否完整、客户端版本是否支持 Hysteria 2。菜单名称可能随版本变化。
 
 ![图9 将节点链接导入v2rayN或Shadowrocket的步骤示意](assets/09-v2rayn.svg)
 
@@ -210,16 +184,15 @@ chmod 640 /etc/hysteria/private.key
 
 ## 九、连接失败应该怎么解决？
 
-如果一直连不上，按这个顺序检查：
+连不上时，依次检查：
 
-1. **实例和 IP：** 实例是否为 Running，客户端填的是不是当前绑定的静态公网 IP？
-2. **端口：** 服务端和客户端是不是同一个 `26818/UDP`，防火墙的 UDP 放行范围是否覆盖它？不要只检查 TCP。
-3. **防火墙：** Lightsail 的 IPv4 规则是否与第三节一致，系统防火墙是否允许 UDP 26818？All TCP/All UDP 已覆盖 TCP 22/UDP 26818，但不代表系统防火墙也已放行；IPv6 仍需独立核对。SSH 另查 TCP 22 和浏览器 SSH 访问设置。
-4. **服务：** Hysteria 2 服务是否为 active？脚本是否报错，日志是否提示证书或配置问题？
-5. **客户端：** 链接是否完整、是否来自当前实例？IP、端口、密码和证书选项是否匹配，版本是否支持 Hysteria 2？
-6. **实际访问：** v2rayN 的系统代理或 Shadowrocket 的连接开关是否打开？再检查应用路由、DNS 及本地网络是否限制 UDP。
+1. **实例：** 状态为 Running，链接使用当前公网 IP。
+2. **端口：** 服务端、客户端均为 `26818/UDP`；Lightsail 与系统防火墙都已放行。IPv6 规则需单独设置。
+3. **服务：** 安装有无报错，Hysteria 2 服务是否 active。
+4. **客户端：** 链接完整，IP、端口、密码和证书选项一致，系统代理或连接开关已打开。
+5. **网络：** 检查本地 UDP 限制、路由和 DNS。
 
-系统如果使用 UFW，先看 `ufw status verbose`；已启用时按既有规则放行 `26818/udp` 并保留 SSH。不要为了排错清空已有防火墙，也不必遇到安装报错就重装或 DD 系统。需要求助时，提供系统版本、区域、服务日志和客户端报错，遮挡密码、私钥和完整分享链接。
+求助时附系统版本、服务日志和报错截图，遮挡密码、私钥和完整分享链接。
 
 ## 十、用起来之后，还要注意什么？
 

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1110" viewBox="0 0 1280 1110" role="img" aria-labelledby="title desc">
-  <title id="title">通过 Lightsail 浏览器 SSH 进入服务器终端</title>
-  <desc id="desc">步骤示意，非控制台实拍。打开实例 Connect 页面，点击 Connect using SSH；在终端输入 cat /etc/os-release 和 whoami 确认系统与当前用户，再输入 sudo -i。后续安装及服务端配置在该 SSH 窗口执行，客户端命令在自己的电脑上执行。图中仅列出待执行命令，不代表连接成功记录。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">打开服务器终端，直接执行 sudo -i</title>
+  <desc id="desc">对应正文第四节的步骤示意。实例 Connect 页面点击 Connect using SSH；终端打开后直接输入 sudo -i，再执行第五节安装命令。</desc>
   <defs>
     <style>
       text { font-family: "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #18324d; }
@@ -13,10 +13,10 @@
       .badge { font-size: 29px; font-weight: 750; fill: #ffffff; text-anchor: middle; }
     </style>
   </defs>
-  <rect width="1280" height="1110" fill="#f5f8fc"/>
+  <rect width="1280" height="760" fill="#f5f8fc"/>
   <rect width="1280" height="155" fill="#ffffff"/>
   <rect x="48" y="44" width="8" height="47" rx="4" fill="#ef8b23"/>
-  <text class="title" x="76" y="82">SSH：打开 AWS 服务器的命令窗口</text>
+  <text class="title" x="76" y="82">打开终端，切换 root 用户</text>
   <text class="subtitle" x="76" y="126">步骤示意 · 非控制台实拍 ｜ 对应正文第四节</text>
 
   <rect x="48" y="185" width="1184" height="205" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
@@ -27,24 +27,13 @@
   <text class="code" x="103" y="313">实例 → Connect → Connect using SSH</text>
   <text class="body" x="81" y="369">等待终端出现，再在该窗口输入下面的命令。</text>
 
-  <rect x="48" y="418" width="1184" height="260" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
+  <rect x="48" y="418" width="1184" height="220" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
   <circle cx="94" cy="468" r="25" fill="#ef8b23"/>
   <text class="badge" x="94" y="478">2</text>
-  <text class="heading" x="139" y="479">先确认系统和当前用户</text>
-  <rect x="80" y="507" width="1120" height="105" rx="10" fill="#edf3fa"/>
-  <text class="code" x="103" y="550">cat /etc/os-release</text>
-  <text class="code" x="103" y="591">whoami</text>
-  <text class="small" x="81" y="651">第一条查看服务器系统信息；第二条查看当前登录的用户。</text>
+  <text class="heading" x="139" y="479">直接输入 sudo -i</text>
+  <rect x="80" y="507" width="1120" height="61" rx="10" fill="#fff3e4"/>
+  <text class="code" x="103" y="549">sudo -i</text>
+  <text class="body" x="81" y="609">切换到 root 用户后，继续执行第五节的一行安装命令。</text>
 
-  <rect x="48" y="706" width="1184" height="220" rx="20" fill="#ffffff" stroke="#d4deea" stroke-width="2"/>
-  <circle cx="94" cy="756" r="25" fill="#ef8b23"/>
-  <text class="badge" x="94" y="766">3</text>
-  <text class="heading" x="139" y="767">进入 root 终端，继续安装服务端</text>
-  <rect x="80" y="794" width="1120" height="61" rx="10" fill="#fff3e4"/>
-  <text class="code" x="103" y="836">sudo -i</text>
-  <text class="small" x="81" y="896">后续安装 Hysteria 2 和服务端配置命令，都在这个 SSH 窗口执行。</text>
-
-  <rect x="48" y="954" width="1184" height="110" rx="18" fill="#fff3e4" stroke="#f2c890" stroke-width="2"/>
-  <text class="body" x="80" y="1000" font-weight="650">执行位置要分清：服务端 → AWS SSH；客户端 → 自己的电脑。</text>
-  <text class="small" x="80" y="1041">图中仅展示待执行命令；连接和命令结果以你自己的终端显示为准。</text>
+  <text class="small" x="80" y="704">图中展示操作步骤，实际命令结果以自己的终端为准。</text>
 </svg>
